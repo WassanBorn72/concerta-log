@@ -16,6 +16,33 @@ android {
         versionName = "1.0.1"
     }
 
+    val releaseKeystorePath = System.getenv("CONCERTA_LOG_KEYSTORE_PATH")
+    val releaseKeystorePassword = System.getenv("CONCERTA_LOG_KEYSTORE_PASSWORD")
+    val releaseKeyAlias = System.getenv("CONCERTA_LOG_KEY_ALIAS")
+    val releaseKeyPassword = System.getenv("CONCERTA_LOG_KEY_PASSWORD")
+
+    signingConfigs {
+        create("release") {
+            if (
+                !releaseKeystorePath.isNullOrBlank() &&
+                !releaseKeystorePassword.isNullOrBlank() &&
+                !releaseKeyAlias.isNullOrBlank() &&
+                !releaseKeyPassword.isNullOrBlank()
+            ) {
+                storeFile = file(releaseKeystorePath)
+                storePassword = releaseKeystorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+
     buildFeatures {
         compose = true
     }
