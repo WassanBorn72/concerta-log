@@ -1,8 +1,8 @@
-name: Build native Android debug APK
+name: Build Android APKs
 
 on:
   push:
-    branches: ["android-native"]
+    branches: ["release-apk"]
     paths:
       - "android-app/**"
       - ".github/workflows/android-debug.yml"
@@ -42,12 +42,23 @@ jobs:
       - name: Install Android SDK 36
         run: yes | sdkmanager "platforms;android-36" "build-tools;36.0.0"
 
-      - name: Build debug APK
+      - name: Build debug and unsigned release APKs
         working-directory: android-app
-        run: gradle :app:assembleDebug --stacktrace
+        run: gradle :app:assembleDebug :app:assembleRelease --stacktrace
+
+      - name: Collect release signing tool
+        run: cp "$ANDROID_HOME/build-tools/36.0.0/lib/apksigner.jar" android-app/app/build/outputs/apk/release/apksigner.jar
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: concerta-log-debug
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload unsigned release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: concerta-log-release-unsigned
+          path: |
+            android-app/app/build/outputs/apk/release/app-release-unsigned.apk
+            android-app/app/build/outputs/apk/release/apksigner.jar
