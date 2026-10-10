@@ -51,11 +51,23 @@ Android版では **Room (SQLite)** を使用し、記録をAndroidのアプリ�
 - minSdk 26
 - applicationId: `com.wassanborn72.concertalog`
 
-### ビルド
+### ビルドとリリース
 
-GitHub Actionsの `Build native Android debug APK` ワークフローでdebug APKを自動ビルドします。
+GitHub Actionsの `Build Android APKs` ワークフローでdebug APKと未署名release APKを自動ビルドします。
 
-現在のコードは、GitHub Actions上で **debug APKのビルド成功を確認済み**です。
+成果物名は次のルールに統一します。
+
+- 未署名release APK: `concerta-log-unsigned.apk`
+- 最終配布用の署名済みrelease APK: `concerta-log.apk`
+
+現在のAndroid版設定:
+
+- App ID: `com.wassanborn72.concertalog`
+- 表示名: `コンサータ服薬ログ`
+- versionName: `1.0.0`
+- versionCode: `1`
+
+release時は未署名APKを、公開リポジトリ外で保管している同一の署名鍵で署名し、最終成果物を `concerta-log.apk` とします。
 
 Android Studioから実行する場合:
 
