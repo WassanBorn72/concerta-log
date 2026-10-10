@@ -30,9 +30,27 @@ jobs:
       - name: Install Android SDK 36
         run: yes | sdkmanager "platforms;android-36" "build-tools;36.0.0"
 
-      - name: Validate secret context
+      - name: Restore release keystore
         env:
-          TEST_ALIAS: ${{ secrets.CONCERTA_LOG_KEY_ALIAS }}
+          KEYSTORE_BASE64: ${{ secrets.CONCERTA_LOG_KEYSTORE_BASE64 }}
         run: |
-          test -n "$TEST_ALIAS"
-          echo "Setup and secret context are valid"
+          test -n "$KEYSTORE_BASE64"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/concerta-log-release.jks"
+
+      - name: Build signed release APK and AAB
+        working-directory: android-app
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.CONCERTA_LOG_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.CONCERTA_LOG_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.CONCERTA_LOG_KEY_PASSWORD }}
+        run: |
+          export CONCERTA_LOG_KEYSTORE_PATH="$RUNNER_TEMP/concerta-log-release.jks"
+          export CONCERTA_LOG_KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD"
+          export CONCERTA_LOG_KEY_ALIAS="$KEY_ALIAS"
+          export CONCERTA_LOG_KEY_PASSWORD="$KEY_PASSWORD"
+          gradle :app:assembleRelease :app:bundleRelease --stacktrace
+
+      - name: Prepare release artifacts
+        run: |
+          cp android-app/app/build/outputs/apk/release/app-release.apk concerta-log.apk
+          cp android-app/app/build/outputs/bundle/release/app-release.aab concerta-log.aab
