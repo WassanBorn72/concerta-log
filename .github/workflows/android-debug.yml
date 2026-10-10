@@ -55,10 +55,13 @@ jobs:
           name: concerta-log-debug
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
 
+      - name: Prepare unsigned release artifact
+        run: cp android-app/app/build/outputs/apk/release/app-release-unsigned.apk android-app/app/build/outputs/apk/release/concerta-log-unsigned.apk
+
       - name: Upload unsigned release APK
         uses: actions/upload-artifact@v4
         with:
           name: concerta-log-release-unsigned
           path: |
-            android-app/app/build/outputs/apk/release/app-release-unsigned.apk
+            android-app/app/build/outputs/apk/release/concerta-log-unsigned.apk
             android-app/app/build/outputs/apk/release/apksigner.jar
