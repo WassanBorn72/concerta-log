@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -224,7 +225,10 @@ private fun ConcertaLogApp(vm: LogViewModel = viewModel()) {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                Surface(shadowElevation = 2.dp) {
+                Surface(
+                    modifier = Modifier.statusBarsPadding(),
+                    shadowElevation = 2.dp
+                ) {
                     Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 12.dp)) {
                         Text("コンサータ服薬ログ", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                         Text("端末内に保存するオフライン服薬記録", style = MaterialTheme.typography.bodySmall)
