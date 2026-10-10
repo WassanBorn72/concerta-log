@@ -1,19 +1,14 @@
 # コンサータ服薬ログ
 
-コンサータ服用後の主観的な変化、作業状況、副作用、睡眠などを日ごとに記録するための個人用ログアプリです。
+**ネイティブAndroidアプリを中心に開発している、個人用の服薬記録アプリです。**
 
-現在、このリポジトリには以下の2系統があります。
+コンサータ服用後の主観的な変化、作業状況、副作用、睡眠などを日ごとに記録し、履歴や推移を確認できます。
 
-- **PWA版**: ブラウザーで利用するオフラインWebアプリ
-- **ネイティブAndroid版**: Kotlin + Jetpack Compose + Room で実装したAndroidアプリ
+ブラウザ版は、画面や記録項目を手軽に確認するための **確認用プレビュー** として残しています。日常的な利用はネイティブAndroid版を前提としています。
 
-## PWA版
+## Android版
 
-### 公開URL
-
-https://wassanborn72.github.io/concerta-log/
-
-Android Chromeで開き、「アプリをインストール」または「ホーム画面に追加」を選ぶことでPWAとして利用できます。
+Android版のソースは `android-app/` にあります。
 
 ### 主な機能
 
@@ -22,56 +17,23 @@ Android Chromeで開き、「アプリをインストール」または「ホー
 - 着手のしやすさ、努力感、作業の進みやすさ、意欲、集中などの主観評価
 - 不安、いらだち、食欲低下、身体症状、効果が切れる時の不調などの記録
 - 作業実績・メモ・医師に伝えたいことの記録
-- 7日間 / 30日間の推移グラフ
 - 日付ごとの履歴表示・編集
-- CSVエクスポート / インポート
-- Service Workerによるオフライン利用
-
-### データ保存
-
-PWA版の記録はブラウザーの `localStorage` に保存されます。
-
-外部サーバーへ記録を送信する処理はありませんが、ブラウザーデータの消去、PWAの削除、端末故障などで記録が失われる可能性があります。必要な記録はCSVとして定期的に書き出してください。
-
----
-
-## ネイティブAndroid版
-
-ネイティブ版は現在、`android-native` ブランチ内の `android-app/` にあります。
-
-Draft PR:
-
-https://github.com/WassanBorn72/concerta-log/pull/1
-
-### 主な機能
-
-- PWA版とほぼ同じ記録項目
-- 日付を主キーとした保存・上書き編集
-- 履歴表示
 - 7日間 / 30日間の推移グラフ
 - CSVエクスポート / インポート
-- PWA版CSVの読み込み
-- 完全オフライン動作
+- ブラウザ版で書き出したCSVの読み込み
+- オフライン動作
 
 ### データ保存
 
 Android版では **Room (SQLite)** を使用し、記録をAndroidのアプリ専用領域に保存します。
 
 - `INTERNET` 権限なし
-- アプリから外部サーバーへ記録を送信する機能なし
+- 外部サーバーへの記録送信なし
 - Androidの自動クラウドバックアップは無効
-- Chromeのサイトデータ削除の影響を受けない
-- 手動CSVバックアップに対応
+- Chromeやブラウザーのサイトデータ削除の影響を受けない
+- CSVによる手動バックアップ・復元に対応
 
-アプリをアンインストールした場合や端末が故障した場合には記録が失われる可能性があるため、必要な記録はCSVでバックアップしてください。
-
-### PWA版からの移行
-
-1. PWA版の「履歴・CSV」からCSVを書き出します。
-2. Android版の「履歴」から「CSVを読み込む」を選びます。
-3. PWA版で書き出したCSVを選択します。
-
-同じ日付の記録がすでにAndroid版に存在する場合、その日付の記録を読み込んだCSVの内容で更新します。
+アプリをアンインストールした場合や端末が故障した場合には記録が失われる可能性があります。残したい記録はCSVでバックアップしてください。
 
 ### 技術構成
 
@@ -79,32 +41,61 @@ Android版では **Room (SQLite)** を使用し、記録をAndroidのアプリ�
 - Jetpack Compose / Material 3
 - Room 2.8.5
 - Compose BOM 2026.06.00
+- Activity Compose 1.12.4
+- Lifecycle 2.10.0
 - Android Gradle Plugin 9.4.0
+- Gradle 9.6.0
+- JDK 17
 - compileSdk 36
 - targetSdk 36
 - minSdk 26
-- JDK 17
-- Gradle 9.6.0
+- applicationId: `com.wassanborn72.concertalog`
 
 ### ビルド
 
-GitHub Actionsの `Build native Android debug APK` ワークフローでdebug APKを自動ビルドできます。
+GitHub Actionsの `Build native Android debug APK` ワークフローでdebug APKを自動ビルドします。
 
-直近のネイティブ版では、GitHub Actions上で **APKのビルド成功を確認済み**です。
+現在のコードは、GitHub Actions上で **debug APKのビルド成功を確認済み**です。
 
 Android Studioから実行する場合:
 
-1. `android-native` ブランチを取得します。
+1. リポジトリを取得します。
 2. Android Studioで `android-app/` を開きます。
 3. JDK 17でGradle Syncします。
 4. Android 8.0 (API 26) 以上の端末またはエミュレータで実行します。
 
-## ブランチ構成
+## ブラウザ確認版
 
-- `main`: PWA版
-- `android-native`: ネイティブAndroid版の開発ブランチ
+確認用ブラウザ版のソースは `web-preview/` にあります。
 
-現在はPWA版を維持したまま、ネイティブ版を別ブランチで開発しています。
+公開URL:
+
+https://wassanborn72.github.io/concerta-log/
+
+GitHub Pagesでは `web-preview/` の内容だけを公開します。
+
+ブラウザ版はネイティブ版の画面・記録項目の確認や、CSV互換性の確認を主目的としています。記録はブラウザーの `localStorage` に保存されるため、日常的な記録にはAndroid版を推奨します。
+
+## ブラウザ版からAndroid版への移行
+
+1. ブラウザ版の「履歴・CSV」からCSVを書き出します。
+2. Android版の「履歴」から「CSVを読み込む」を選びます。
+3. 書き出したCSVを指定します。
+
+同じ日付の記録がAndroid版に存在する場合、その日付の記録をCSV側の内容で更新します。
+
+## リポジトリ構成
+
+```text
+.
+├─ android-app/                 # メインのネイティブAndroidアプリ
+├─ web-preview/                 # 確認用ブラウザ版
+├─ .github/
+│  └─ workflows/
+│     ├─ android-debug.yml      # Android APKビルド
+│     └─ deploy.yml             # ブラウザ確認版のGitHub Pages公開
+└─ README.md
+```
 
 ## プライバシーと注意事項
 
