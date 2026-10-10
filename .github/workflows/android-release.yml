@@ -54,3 +54,21 @@ jobs:
         run: |
           cp android-app/app/build/outputs/apk/release/app-release.apk concerta-log.apk
           cp android-app/app/build/outputs/bundle/release/app-release.aab concerta-log.aab
+
+      - name: Verify APK signature
+        shell: bash
+        run: |
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs concerta-log.apk
+
+      - name: Verify AAB signature
+        shell: bash
+        run: |
+          jarsigner -verify concerta-log.aab
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: concerta-log-release
+          path: |
+            concerta-log.apk
+            concerta-log.aab
