@@ -92,8 +92,8 @@ object CsvCodec {
 
     private fun escape(value: String): String {
         val needsQuotes = value.any { it == ',' || it == '"' || it == '\n' || it == '\r' }
-        val escaped = value.replace("\\\"", "\\\"\\\"")
-        return if (needsQuotes) "\\\"$escaped\\\"" else escaped
+        val escaped = value.replace("\"", "\"\"")
+        return if (needsQuotes) "\"$escaped\"" else escaped
     }
 
     private fun parse(text: String): List<List<String>> {
