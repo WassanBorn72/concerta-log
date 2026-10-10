@@ -27,7 +27,7 @@ PWA版 `concerta-log` を Kotlin + Jetpack Compose + Room でネイティブAndr
 - Room 2.8.5
 - Compose BOM 2026.09.00
 - Android Gradle Plugin 9.4.0
-- compileSdk 37 / targetSdk 36
+- compileSdk / targetSdk 36
 - minSdk 26
 - JDK 17
 
