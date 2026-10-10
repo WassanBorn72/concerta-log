@@ -8,18 +8,13 @@
 
 ## Android版をダウンロード
 
-最新版は GitHub Actions の **Build Android Release** から取得できます。
+最新版は **GitHub Releases** からダウンロードできます。
 
-**[Build Android Release を開く](https://github.com/WassanBorn72/concerta-log/actions/workflows/android-release.yml)**
+### [最新版の `concerta-log.apk` をダウンロード](https://github.com/WassanBorn72/concerta-log/releases/latest/download/concerta-log.apk)
 
-最新の成功した実行を開き、画面下部の **Artifacts → `concerta-log-release`** をダウンロードしてください。
+Android端末へ直接インストールする場合は `concerta-log.apk` を使用してください。
 
-Artifactには次の2つが入っています。
-
-- `concerta-log.apk`：Android端末へ直接インストールするためのAPK
-- `concerta-log.aab`：将来Google Playへ公開するためのAndroid App Bundle
-
-通常のインストールには `concerta-log.apk` を使用してください。
+リリース履歴やGoogle Play用のAABは、[Releasesページ](https://github.com/WassanBorn72/concerta-log/releases) から確認できます。
 
 ## Android版
 
