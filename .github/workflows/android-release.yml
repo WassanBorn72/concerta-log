@@ -1,0 +1,73 @@
+name: Build Android Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    env:
+      CONCERTA_LOG_KEYSTORE_PATH: ${{ github.workspace }}/android-app/concerta-log-release.jks
+      CONCERTA_LOG_KEYSTORE_PASSWORD: ${{ secrets.CONCERTA_LOG_KEYSTORE_PASSWORD }}
+      CONCERTA_LOG_KEY_ALIAS: ${{ secrets.CONCERTA_LOG_KEY_ALIAS }}
+      CONCERTA_LOG_KEY_PASSWORD: ${{ secrets.CONCERTA_LOG_KEY_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle 9.6
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.6.0"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: "platform-tools"
+
+      - name: Install Android SDK 36
+        run: yes | sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Restore release keystore
+        shell: bash
+        run: |
+          test -n "${{ secrets.CONCERTA_LOG_KEYSTORE_BASE64 }}"
+          echo "${{ secrets.CONCERTA_LOG_KEYSTORE_BASE64 }}" | base64 --decode > "$CONCERTA_LOG_KEYSTORE_PATH"
+
+      - name: Build signed release APK and AAB
+        working-directory: android-app
+        run: gradle :app:assembleRelease :app:bundleRelease --stacktrace
+
+      - name: Prepare release artifacts
+        shell: bash
+        run: |
+          cp android-app/app/build/outputs/apk/release/app-release.apk android-app/app/build/outputs/apk/release/concerta-log.apk
+          cp android-app/app/build/outputs/bundle/release/app-release.aab android-app/app/build/outputs/bundle/release/concerta-log.aab
+
+      - name: Verify APK signature
+        run: "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs android-app/app/build/outputs/apk/release/concerta-log.apk
+
+      - name: Verify AAB signature
+        run: jarsigner -verify android-app/app/build/outputs/bundle/release/concerta-log.aab
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: concerta-log-release
+          if-no-files-found: error
+          path: |
+            android-app/app/build/outputs/apk/release/concerta-log.apk
+            android-app/app/build/outputs/bundle/release/concerta-log.aab
