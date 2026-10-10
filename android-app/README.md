@@ -1,53 +1,101 @@
 # コンサータ服薬ログ Android版
 
-PWA版 `concerta-log` を Kotlin + Jetpack Compose + Room でネイティブAndroidアプリ化したものです。
+`android-native` ブランチで開発しているネイティブAndroid版です。
+
+PWA版の機能と記録項目を引き継ぎつつ、データ保存をブラウザーの `localStorage` から **Room (SQLite)** に変更しています。
 
 ## 方針
 
-- **端末内完結**: Room (SQLite) をアプリ専用領域に保存
-- **INTERNET権限なし**: アプリから外部サーバーへ記録を送信する機能はありません
-- **Android自動バックアップ無効**: 服薬・体調記録が意図せずクラウドへ複製されるのを避けます
-- **手動バックアップ**: Storage Access Framework を使ってCSVを書き出し・読み込み
-- **PWA互換**: 既存PWAが書き出したCSVをそのまま読み込めます
+- **端末内完結**
+- **INTERNET権限なし**
+- **外部サーバーへの記録送信なし**
+- **Android自動クラウドバックアップ無効**
+- **CSVによる手動バックアップ・復元**
+- **PWA版CSVとの互換性を維持**
 
 ## 主な機能
 
-- 日付、服薬量、服薬時刻、睡眠、主観的変化、副作用、作業実績の記録
-- 日付を主キーとした保存・上書き編集
-- 7日 / 30日の推移グラフ
-- 履歴表示
+- 日付、服薬量、服薬時刻
+- 睡眠時間・睡眠の質
+- 着手のしやすさ
+- 着手に必要な努力感
+- 作業の進みやすさ
+- 意欲
+- 頭・気持ちの落ち着き
+- ぼんやり感
+- 集中の保ちやすさ
+- 不安・緊張
+- いらだち
+- 食欲低下
+- 身体の副作用
+- 効果が切れる時の不調
+- 作業実績・メモ・医師に伝えたいこと
+- 履歴表示・編集
+- 7日間 / 30日間の推移グラフ
 - CSVエクスポート / インポート
-- PWA版と共通の評価項目
-- オフライン動作
+
+## データ保存
+
+記録はRoomデータベースとしてAndroidのアプリ専用領域に保存されます。
+
+Chromeのサイトデータ削除の影響は受けません。
+
+一方で、アプリのアンインストールや端末故障では記録が失われる可能性があるため、必要な記録はCSVで書き出してください。
+
+Androidの自動クラウドバックアップは無効化しています。
+
+## PWA版からの移行
+
+1. PWA版でCSVを書き出します。
+2. Android版の「履歴」画面を開きます。
+3. 「CSVを読み込む」を選びます。
+4. PWA版で書き出したCSVを指定します。
+
+PWA版とAndroid版は同じ主要列名を使っているため、既存記録を移行できます。
+
+同じ日付の記録が存在する場合は、その日付のデータを読み込んだ内容で更新します。
 
 ## 技術構成
 
 - Kotlin
-- Jetpack Compose / Material 3
+- Jetpack Compose
+- Material 3
 - Room 2.8.5
-- Compose BOM 2026.09.00
+- Compose BOM 2026.06.00
+- Activity Compose 1.12.4
+- Lifecycle 2.10.0
 - Android Gradle Plugin 9.4.0
-- compileSdk / targetSdk 36
-- minSdk 26
+- Gradle 9.6.0
 - JDK 17
+- compileSdk 36
+- targetSdk 36
+- minSdk 26
 
 ## Android Studioで開く
 
-1. このリポジトリの `android-native` ブランチを取得します。
-2. Android Studioで `android-app` フォルダをプロジェクトとして開きます。
-3. Gradle 9.6.0 / JDK 17 を使用してSyncします。
+1. リポジトリの `android-native` ブランチを取得します。
+2. Android Studioで `android-app/` を開きます。
+3. JDK 17を使用してGradle Syncします。
 4. Android 8.0 (API 26) 以上の端末またはエミュレータで実行します。
 
-## PWAからの移行
+## GitHub Actions
 
-1. PWA版の「履歴・CSV」からCSVを書き出します。
-2. Android版の「履歴」→「CSVを読み込む」を選びます。
-3. 書き出したCSVを選択します。
+`.github/workflows/android-debug.yml` でdebug APKをビルドします。
 
-同じ日付の記録がすでにAndroid版にある場合、その日付の記録をCSV側の内容で更新します。
+ワークフロー:
 
-## データについて
+`Build native Android debug APK`
 
-RoomデータベースはAndroidのアプリ専用領域に置かれます。Chromeのサイトデータ削除の影響は受けません。一方、アプリをアンインストールすると原則としてDBも削除されるため、残したい記録はCSVでバックアップしてください。
+現在のコードではGitHub Actions上で **debug APKのビルド成功を確認済み**です。
 
-このアプリは記録・振り返り用です。診断や服薬量の決定を行うものではありません。
+生成されたAPKはWorkflow Artifactの `concerta-log-debug` として取得できます。
+
+## applicationId
+
+`com.wassanborn72.concertalog`
+
+## 注意事項
+
+このアプリは記録・振り返り用です。
+
+診断、治療判断、服薬量の決定を行うものではありません。服用方法や用量は処方に従ってください。
