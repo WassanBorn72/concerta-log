@@ -53,12 +53,12 @@ Android版では **Room (SQLite)** を使用し、記録をAndroidのアプリ�
 
 ### ビルドとリリース
 
-GitHub Actionsの `Build Android APKs` ワークフローでdebug APKと未署名release APKを自動ビルドします。
+GitHub Actionsの `Build Android Release` ワークフローで、同じ正式署名鍵を使ったrelease APKとAndroid App Bundleを生成します。
 
 成果物名は次のルールに統一します。
 
-- 未署名release APK: `concerta-log-unsigned.apk`
-- 最終配布用の署名済みrelease APK: `concerta-log.apk`
+- 直接インストール用 APK: `concerta-log.apk`
+- Google Play公開用 AAB: `concerta-log.aab`
 
 現在のAndroid版設定:
 
@@ -67,7 +67,7 @@ GitHub Actionsの `Build Android APKs` ワークフローでdebug APKと未署�
 - versionName: `1.0.1`
 - versionCode: `2`
 
-release時は未署名APKを、公開リポジトリ外で保管している同一の署名鍵で署名し、最終成果物を `concerta-log.apk` とします。
+release時はGitHub Actions Secretsから正式署名鍵を復元し、`assembleRelease` と `bundleRelease` を実行します。APKとAABはいずれも同じ鍵で署名されます。
 
 Android Studioから実行する場合:
 
@@ -104,7 +104,7 @@ GitHub Pagesでは `web-preview/` の内容だけを公開します。
 ├─ web-preview/                 # 確認用ブラウザ版
 ├─ .github/
 │  └─ workflows/
-│     ├─ android-debug.yml      # Android APKビルド
+│     ├─ android-release.yml    # 署名済みAPK / AABビルド
 │     └─ deploy.yml             # ブラウザ確認版のGitHub Pages公開
 └─ README.md
 ```
