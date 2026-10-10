@@ -1,0 +1,14 @@
+{
+  "id": "./",
+  "name": "コンサータ服薬ログ",
+  "short_name": "服薬ログ",
+  "description": "服薬後の主観的変化を端末内に記録し、日ごとの推移を確認するオフライン記録アプリ",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f7f8",
+  "theme_color": "#28536b",
+  "icons": [{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
