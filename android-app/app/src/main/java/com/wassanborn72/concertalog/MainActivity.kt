@@ -13,6 +13,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -473,7 +475,7 @@ private fun TrendsScreen(logs: List<MedicationLog>) {
                     FilterChip(selected = days == 30, onClick = { days = 30 }, label = { Text("30日間") })
                 }
                 MetricMenu("グラフ項目1", metricA, metrics) { metricA = it }
-                MetricMenu("比較項目2", metricB, listOf(null) + metrics) { metricB = it }
+                OptionalMetricMenu("比較項目2", metricB, metrics) { metricB = it }
 
                 TrendChart(
                     logs = inRange,
@@ -699,7 +701,7 @@ private fun ChipText(label: String, value: Int?) {
 }
 
 @Composable
-private fun SectionCard(title: String, content: @Composable Column.() -> Unit) {
+private fun SectionCard(title: String, content: @Composable ColumnScope.() -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -808,12 +810,41 @@ private fun SelectMenu(
 }
 
 @Composable
-private fun <T> MetricMenu(
+private fun MetricMenu(
     label: String,
-    value: T,
-    options: List<T>,
-    onChange: (T) -> Unit
-) where T : Metric? {
+    value: Metric,
+    options: List<Metric>,
+    onChange: (Metric) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(label, fontWeight = FontWeight.SemiBold)
+        Box {
+            OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+                Text(value.label)
+            }
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.label) },
+                        onClick = {
+                            onChange(option)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OptionalMetricMenu(
+    label: String,
+    value: Metric?,
+    options: List<Metric>,
+    onChange: (Metric?) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(label, fontWeight = FontWeight.SemiBold)
@@ -822,9 +853,16 @@ private fun <T> MetricMenu(
                 Text(value?.label ?: "比較項目なし")
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                DropdownMenuItem(
+                    text = { Text("比較項目なし") },
+                    onClick = {
+                        onChange(null)
+                        expanded = false
+                    }
+                )
                 options.forEach { option ->
                     DropdownMenuItem(
-                        text = { Text(option?.label ?: "比較項目なし") },
+                        text = { Text(option.label) },
                         onClick = {
                             onChange(option)
                             expanded = false
