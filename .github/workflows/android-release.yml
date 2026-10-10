@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -72,3 +75,10 @@ jobs:
           path: |
             concerta-log.apk
             concerta-log.aab
+
+      - name: Publish GitHub Release v1.0.1
+        if: github.event_name == 'push' && github.event.head_commit.message == 'Publish v1.0.1 on GitHub Releases'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v1.0.1"             concerta-log.apk             concerta-log.aab             --repo "$GITHUB_REPOSITORY"             --target "$GITHUB_SHA"             --title "v1.0.1"             --notes "Initial GitHub Release of コンサータ服薬ログ. Includes the signed Android APK for direct installation and the AAB for future Google Play distribution."
