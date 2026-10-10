@@ -4,24 +4,15 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "main"
-    tags:
-      - "v*"
-    paths:
-      - "android-app/**"
-      - ".github/workflows/android-release.yml"
+      - main
 
 permissions:
   contents: read
 
 jobs:
-  build-release:
+  build:
+    name: Build signed APK and AAB
     runs-on: ubuntu-latest
-    env:
-      CONCERTA_LOG_KEYSTORE_PATH: ${{ github.workspace }}/android-app/concerta-log-release.jks
-      CONCERTA_LOG_KEYSTORE_PASSWORD: ${{ secrets.CONCERTA_LOG_KEYSTORE_PASSWORD }}
-      CONCERTA_LOG_KEY_ALIAS: ${{ secrets.CONCERTA_LOG_KEY_ALIAS }}
-      CONCERTA_LOG_KEY_PASSWORD: ${{ secrets.CONCERTA_LOG_KEY_PASSWORD }}
 
     steps:
       - name: Checkout
@@ -40,33 +31,36 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
-        with:
-          packages: "platform-tools"
 
       - name: Install Android SDK 36
         run: yes | sdkmanager "platforms;android-36" "build-tools;36.0.0"
 
       - name: Restore release keystore
-        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.CONCERTA_LOG_KEYSTORE_BASE64 }}
         run: |
-          test -n "${{ secrets.CONCERTA_LOG_KEYSTORE_BASE64 }}"
-          echo "${{ secrets.CONCERTA_LOG_KEYSTORE_BASE64 }}" | base64 --decode > "$CONCERTA_LOG_KEYSTORE_PATH"
+          test -n "$KEYSTORE_BASE64"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/concerta-log-release.jks"
 
       - name: Build signed release APK and AAB
         working-directory: android-app
+        env:
+          CONCERTA_LOG_KEYSTORE_PATH: ${{ runner.temp }}/concerta-log-release.jks
+          CONCERTA_LOG_KEYSTORE_PASSWORD: ${{ secrets.CONCERTA_LOG_KEYSTORE_PASSWORD }}
+          CONCERTA_LOG_KEY_ALIAS: ${{ secrets.CONCERTA_LOG_KEY_ALIAS }}
+          CONCERTA_LOG_KEY_PASSWORD: ${{ secrets.CONCERTA_LOG_KEY_PASSWORD }}
         run: gradle :app:assembleRelease :app:bundleRelease --stacktrace
 
       - name: Prepare release artifacts
-        shell: bash
         run: |
-          cp android-app/app/build/outputs/apk/release/app-release.apk android-app/app/build/outputs/apk/release/concerta-log.apk
-          cp android-app/app/build/outputs/bundle/release/app-release.aab android-app/app/build/outputs/bundle/release/concerta-log.aab
+          cp android-app/app/build/outputs/apk/release/app-release.apk concerta-log.apk
+          cp android-app/app/build/outputs/bundle/release/app-release.aab concerta-log.aab
 
       - name: Verify APK signature
-        run: "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs android-app/app/build/outputs/apk/release/concerta-log.apk
+        run: "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs concerta-log.apk
 
       - name: Verify AAB signature
-        run: jarsigner -verify android-app/app/build/outputs/bundle/release/concerta-log.aab
+        run: jarsigner -verify concerta-log.aab
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
@@ -74,5 +68,5 @@ jobs:
           name: concerta-log-release
           if-no-files-found: error
           path: |
-            android-app/app/build/outputs/apk/release/concerta-log.apk
-            android-app/app/build/outputs/bundle/release/concerta-log.aab
+            concerta-log.apk
+            concerta-log.aab
