@@ -3,8 +3,13 @@ name: Build Android Release
 on:
   workflow_dispatch:
   push:
+    branches:
+      - "main"
     tags:
       - "v*"
+    paths:
+      - "android-app/**"
+      - ".github/workflows/android-release.yml"
 
 permissions:
   contents: read
