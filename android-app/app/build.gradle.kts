@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.wassanborn72.concertalog"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.wassanborn72.concertalog"
