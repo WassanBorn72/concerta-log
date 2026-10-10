@@ -4,7 +4,7 @@
 
 コンサータ服用後の主観的な変化、作業状況、副作用、睡眠などを日ごとに記録し、履歴や推移を確認できます。
 
-ブラウザ版は、画面や記録項目を手軽に確認するための **確認用プレビュー** として残しています。日常的な利用はネイティブAndroid版を前提としています。
+ブラウザ版は画面・記録項目・CSV互換性の確認用として残しており、日常的な利用はネイティブAndroid版を前提としています。
 
 ## Android版
 
@@ -20,8 +20,8 @@ Android版のソースは `android-app/` にあります。
 - 日付ごとの履歴表示・編集
 - 7日間 / 30日間の推移グラフ
 - CSVエクスポート / インポート
-- ブラウザ版で書き出したCSVの読み込み
-- オフライン動作
+- ブラウザ版CSVの読み込み
+- 完全オフライン動作
 
 ### データ保存
 
@@ -35,7 +35,19 @@ Android版では **Room (SQLite)** を使用し、記録をAndroidのアプリ�
 
 アプリをアンインストールした場合や端末が故障した場合には記録が失われる可能性があります。残したい記録はCSVでバックアップしてください。
 
-### 技術構成
+## 現在のアプリ情報
+
+| 項目 | 値 |
+| --- | --- |
+| App ID | `com.wassanborn72.concertalog` |
+| 表示名 | `コンサータ服薬ログ` |
+| versionName | `1.0.1` |
+| versionCode | `2` |
+| minSdk | `26` |
+| targetSdk | `36` |
+| compileSdk | `36` |
+
+## 技術構成
 
 - Kotlin
 - Jetpack Compose / Material 3
@@ -46,30 +58,88 @@ Android版では **Room (SQLite)** を使用し、記録をAndroidのアプリ�
 - Android Gradle Plugin 9.4.0
 - Gradle 9.6.0
 - JDK 17
-- compileSdk 36
-- targetSdk 36
-- minSdk 26
-- applicationId: `com.wassanborn72.concertalog`
 
-### ビルドとリリース
+## Android release
 
-GitHub Actionsの `Build Android Release` ワークフローで、同じ正式署名鍵を使ったrelease APKとAndroid App Bundleを生成します。
+GitHub Actionsの **`Build Android Release`** ワークフローで、正式署名鍵を使用したrelease APKとAABを生成します。
 
-成果物名は次のルールに統一します。
+ワークフローでは次を実行します。
+
+1. JDK 17 / Gradle 9.6 / Android SDK 36をセットアップ
+2. GitHub SecretsからBase64化された正式署名鍵を復元
+3. `assembleRelease` を実行
+4. `bundleRelease` を実行
+5. APK署名を `apksigner` で検証
+6. AAB署名を `jarsigner` で検証
+7. APK / AABをWorkflow Artifactとして保存
+
+### release成果物
 
 - 直接インストール用 APK: `concerta-log.apk`
 - Google Play公開用 AAB: `concerta-log.aab`
+- GitHub Actions Artifact名: `concerta-log-release`
 
-現在のAndroid版設定:
+APKはAndroid端末へ直接インストールするための配布物です。
 
-- App ID: `com.wassanborn72.concertalog`
-- 表示名: `コンサータ服薬ログ`
-- versionName: `1.0.1`
-- versionCode: `2`
+AABは将来Google Playへ公開する場合に使用するための成果物です。通常、AABそのものをAndroid端末へ直接インストールする用途では使用しません。
 
-release時はGitHub Actions Secretsから正式署名鍵を復元し、`assembleRelease` と `bundleRelease` を実行します。APKとAABはいずれも同じ鍵で署名されます。
+## 正式署名鍵
 
-Android Studioから実行する場合:
+正式署名鍵:
+
+`concerta-log-release.jks`
+
+署名鍵はリポジトリにはコミットせず、GitHub ActionsではBase64化した内容をRepository Secretsから復元します。
+
+現在の正式署名鍵のフィンガープリント:
+
+```text
+Alias: concerta-log
+
+SHA-1:
+DD:9C:B5:61:07:9B:1D:A6:21:AE:D9:E1:D1:4C:02:67:7F:3B:99:04
+
+SHA-256:
+C5:22:FA:6C:3C:79:11:1D:50:07:CC:AE:EF:17:2A:A1:
+D8:54:36:A6:2F:75:D2:8F:AE:16:67:59:92:17:B3:37
+```
+
+この署名鍵は、既存インストールへの上書きアップデートに必要です。新しいバージョンでも同じ鍵を使用します。
+
+`.jks` / `.keystore` は `android-app/.gitignore` で除外しています。
+
+## GitHub Actions Secrets
+
+リポジトリの
+
+**Settings → Secrets and variables → Actions → New repository secret**
+
+から次の4つを登録します。
+
+| Secret | 内容 |
+| --- | --- |
+| `CONCERTA_LOG_KEYSTORE_BASE64` | `concerta-log-release.jks` をBase64化した全文 |
+| `CONCERTA_LOG_KEYSTORE_PASSWORD` | Keystoreのパスワード |
+| `CONCERTA_LOG_KEY_ALIAS` | 署名鍵のAlias |
+| `CONCERTA_LOG_KEY_PASSWORD` | Keyのパスワード |
+
+パスワードやBase64文字列そのものはREADMEやGitHubのソースコードへ記載しません。
+
+## release手順
+
+1. `android-app/app/build.gradle.kts` の `versionName` と `versionCode` を更新します。
+2. `versionCode` は前回より必ず大きい値にします。
+3. 変更を `main` に反映します。
+4. GitHubの **Actions → Build Android Release** を開きます。
+5. 自動実行されたrun、または **Run workflow** から手動実行したrunが成功することを確認します。
+6. run下部の **Artifacts → concerta-log-release** をダウンロードします。
+7. Artifact内の `concerta-log.apk` を直接インストール用として配布します。
+8. `concerta-log.aab` はGoogle Play公開用として保管します。
+9. 必要に応じてGitHub Releasesへ `concerta-log.apk` を添付します。
+
+現在のWorkflowは `main` へのpushでも自動実行され、`workflow_dispatch` による手動実行にも対応しています。
+
+## Android Studioで実行する場合
 
 1. リポジトリを取得します。
 2. Android Studioで `android-app/` を開きます。
@@ -86,7 +156,7 @@ https://wassanborn72.github.io/concerta-log/
 
 GitHub Pagesでは `web-preview/` の内容だけを公開します。
 
-ブラウザ版はネイティブ版の画面・記録項目の確認や、CSV互換性の確認を主目的としています。記録はブラウザーの `localStorage` に保存されるため、日常的な記録にはAndroid版を推奨します。
+ブラウザ版はネイティブ版の画面・記録項目・CSV互換性を手軽に確認するための補助版です。記録はブラウザーの `localStorage` に保存されるため、日常的な記録にはAndroid版を使用してください。
 
 ## ブラウザ版からAndroid版への移行
 
