@@ -64,8 +64,8 @@ GitHub Actionsの `Build Android APKs` ワークフローでdebug APKと未署�
 
 - App ID: `com.wassanborn72.concertalog`
 - 表示名: `コンサータ服薬ログ`
-- versionName: `1.0.0`
-- versionCode: `1`
+- versionName: `1.0.1`
+- versionCode: `2`
 
 release時は未署名APKを、公開リポジトリ外で保管している同一の署名鍵で署名し、最終成果物を `concerta-log.apk` とします。
 
